@@ -1,0 +1,53 @@
+// This is the Prisma schema file for ToolTrack application.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int       @id @default(autoincrement())
+  name       String
+  email      String    @unique
+  tools      Tool[]    @relation("UserTools")
+  transactions Transaction[] @relation("UserTransactions")
+  auditLogs  AuditLog[] @relation("UserAuditLogs")
+}
+
+model Tool {
+  id         Int        @id @default(autoincrement())
+  name       String
+  description String
+  locationId Int
+  location   Location   @relation(fields: [locationId], references: [id])
+  users      User[]     @relation("UserTools")
+  transactions Transaction[] @relation("ToolTransactions")
+}
+
+model Location {
+  id         Int        @id @default(autoincrement())
+  name       String
+  tools      Tool[]     @relation
+}
+
+model Transaction {
+  id         Int        @id @default(autoincrement())
+  userId     Int
+  toolId     Int
+  user       User       @relation(fields: [userId], references: [id])
+  tool       Tool       @relation(fields: [toolId], references: [id])
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+}
+
+model AuditLog {
+  id         Int        @id @default(autoincrement())
+  userId     Int
+  action     String
+  timestamp  DateTime   @default(now())
+  user       User       @relation(fields: [userId], references: [id])
+}
